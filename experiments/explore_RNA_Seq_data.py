@@ -1,4 +1,5 @@
 #%%
+import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from consts import DATASETS_PATH
@@ -49,3 +50,15 @@ for col in clinical.columns:
         print(counts)
         print('#'*20)
 # %%
+# exploring RNA-Seq data
+
+def sample_sequence(sample_sheet: pd.DataFrame):
+    sample = sample_sheet.sample(1).iloc[0]
+    rna_seq = pd.read_csv(osp.join(luad_rna_seq_path,sample['File ID'],sample['File Name']),sep='\t', header=1)
+    rna_seq.drop([0,1,2,3],axis=0, inplace=True)
+    return rna_seq
+
+sample1 = sample_sequence(sample_sheet)
+sample2 = sample_sequence(sample_sheet)
+sample3 = sample_sequence(sample_sheet)
+#%%
