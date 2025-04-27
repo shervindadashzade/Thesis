@@ -1,8 +1,26 @@
+#%%
 import pandas as pd
 import numpy as np
 import torch
 from torch.utils.data import Dataset
 import os.path as osp
+import torch.nn.functional as F
+
+class RNATabularDataset(Dataset):
+    def __init__(self, dataset):
+        super().__init__()
+        self.expressions = dataset.iloc[:,:-1].values
+        self.classes = dataset['label'].unique().tolist()
+        self.labels = dataset['label'].apply(lambda x: self.classes.index(x)).values.tolist()
+
+    def __len__(self):
+        return self.expressions.shape[0]
+        
+    def __getitem__(self, index):
+        expression = self.expressions[index,:].reshape(1,-1)
+        label = self.labels[index]
+        
+        return expression, label
 
 class RNASeqDataset(Dataset):
     def __init__(self, sample_sheet, rna_seq_path, column='tpm_unstranded'):

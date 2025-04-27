@@ -1,1 +1,1 @@
-from data.rna_seq_dataset import RNASeqDataset
+from data.rna_seq_dataset import RNASeqDataset, RNATabularDataset
