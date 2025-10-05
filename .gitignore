@@ -173,3 +173,14 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+*.jpg
+*.png
+*.csv
+*.pkl
+*.tsv
+*#
+git
+*.gz
+*.maf
+trash
+*.pt
