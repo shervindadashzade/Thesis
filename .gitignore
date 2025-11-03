@@ -1,4 +1,20 @@
+.vscode
+events*
+hparams.yaml
+*.ckpt
 storage/*
+*.jpg
+*.png
+*.csv
+*.pkl
+*.tsv
+*#
+git
+*.gz
+*.maf
+trash
+*.pt
+*-workspace
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -173,14 +189,3 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
-*.jpg
-*.png
-*.csv
-*.pkl
-*.tsv
-*#
-git
-*.gz
-*.maf
-trash
-*.pt

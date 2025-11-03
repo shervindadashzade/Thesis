@@ -1,0 +1,2 @@
+VOCAB_SIZE = 22 # 0: CLS, 1: MSK, 2 - 21: bins
+NUM_GENE = 15207
