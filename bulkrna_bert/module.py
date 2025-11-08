@@ -44,14 +44,19 @@ class BulkRNABertModel(L.LightningModule):
 
     def on_test_epoch_end(self):
         all_embeddings = torch.concat(self.embeddings, dim=0)
-        torch.save(all_embeddings, "tcga_without_masking_embeddings.pt")
+        torch.save(all_embeddings, "gdsc_embeddings.pt")
         self.embeddings.clear()
 
 
 if __name__ == "__main__":
     from bulkrna_bert.datamodule import TCGARNASeqDataModule
 
-    datamodule = TCGARNASeqDataModule(mask_percentage=0.0, batch_size=16)
+    datamodule = TCGARNASeqDataModule(
+        mask_percentage=0.12,
+        batch_size=16,
+        path="/mnt/hdd/Shervin/Thesis/bulkrna_bert/data/gdsc_input_ids.pt",
+    )
+
     model = BulkRNABertModel()
     trainer = L.Trainer(
         accelerator="gpu",
