@@ -47,6 +47,29 @@ def mask_input_ids(
     return {"input_ids": input_ids, "labels": labels}
 
 
+def split_train_val_test_indices(dataset_labels, num_to_select=5):
+    all_train_indices = []
+    all_val_indices = []
+    all_test_indices = []
+
+    for i in torch.unique(dataset_labels).tolist():
+        indices = torch.where(dataset_labels == i)[0]
+        select_indices = indices[torch.randperm(indices.shape[0])[: num_to_select * 2]]
+        val_indices = select_indices[:num_to_select]
+        test_indices = select_indices[num_to_select:]
+        train_indices = indices[
+            ~torch.isin(indices, torch.concat([val_indices, test_indices]))
+        ]
+        all_train_indices.append(train_indices)
+        all_val_indices.append(val_indices)
+        all_test_indices.append(test_indices)
+
+    all_train_indices = torch.concat(all_train_indices)
+    all_val_indices = torch.concat(all_val_indices)
+    all_test_indices = torch.concat(all_test_indices)
+    return all_train_indices, all_val_indices, all_test_indices
+
+
 if __name__ == "__main__":
     from bulkrna_bert.tokenizer import BinnedOmicTokenizer
     import pandas as pd
