@@ -29,7 +29,7 @@ def mask_input_ids(
     perm = torch.randperm(num_to_mask)
     mask_indices = selected_indices[perm[:n_mask]]
     random_indices = selected_indices[perm[n_mask : n_mask + n_random]]
-    unchanged_indices = selected_indices[perm[n_mask + n_random :]]
+    # unchanged_indices = selected_indices[perm[n_mask + n_random :]]
 
     # Prepare labels
     labels = torch.full_like(input_ids, -100)

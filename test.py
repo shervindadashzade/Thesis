@@ -1,42 +1,26 @@
+tcga_path = "/mnt/hdd/Shervin/Thesis/bulkrna_bert/data/tcga_input_ids.pt"
+ccle_path = "/mnt/hdd/Shervin/Thesis/bulkrna_bert/data/ccle_input_ids.pt"
+gdsc_path = "/mnt/hdd/Shervin/Thesis/bulkrna_bert/data/gdsc_input_ids.pt"
+# %%
 import torch
-from bulkrna_bert.model import BulkRNABert, BulkRNABertConfig
-from bulkrna_bert.tokenizer import BinnedOmicTokenizer
-from bulkrna_bert.datamodule import RNASeqDataset
-from torch.utils.data import DataLoader
 
-repo = "InstaDeepAI/BulkRNABert"
-config = BulkRNABertConfig.from_pretrained(repo)
-model = BulkRNABert.from_pretrained(repo, config=config)
-tokenizer = BinnedOmicTokenizer.from_pretrained(repo)
-device = "cuda:0"
-model.eval()
-model.to(torch.bfloat16)
-model.to(device)
-
-dataset = RNASeqDataset()
-loader = DataLoader(dataset, batch_size=16)
-batch = next(iter(loader))
-batch
-input_ids = batch["input_ids"].to(device)
-input_ids.shape
-
-with torch.no_grad():
-    out = model(input_ids)
-
-preds = out["logits"].argmax(dim=-1).cpu()
-labels = batch["labels"]
-mask = labels != -100
-total = mask.sum()
-correct = (labels[mask] == preds[mask]).sum()
-correct / total
+tcga_input_ids = torch.load(tcga_path)
+ccle_input_ids = torch.load(ccle_path)
+gdsc_input_ids = torch.load(gdsc_path)
 # %%
-config.n_genes
-model
-model.gene_embedding_layer
-input_ids.shape
+tcga_input_ids.shape
+ccle_input_ids.shape
+gdsc_input_ids.shape
 # %%
-model.expression_embedding_layer
+all_input_ids = torch.concat([ccle_input_ids, gdsc_input_ids, tcga_input_ids], dim=0)
+all_input_ids.shape
 
-input_ids.max()
+dataset_labels = (
+    [0] * ccle_input_ids.shape[0]
+    + [1] * gdsc_input_ids.shape[0]
+    + [2] * tcga_input_ids.shape[0]
+)
 # %%
-tokenizer.vocab
+data = {"input_ids": all_input_ids, "dataset_labels": dataset_labels}
+
+torch.save(data, "bulkrna_bert/data/all_data.pt")

@@ -2,10 +2,11 @@ import torch
 from bulkrna_bert.model import BulkRNABert, BulkRNABertConfig
 import lightning as L
 from torchmetrics import F1Score, Accuracy, Precision, Recall
+import torch.nn.functional as F
 
 
 class BulkRNABertModel(L.LightningModule):
-    def __init__(self) -> None:
+    def __init__(self, lr=1e-4) -> None:
         super().__init__()
         self.repo = "InstaDeepAI/BulkRNABert"
         self.config = BulkRNABertConfig.from_pretrained(self.repo)
@@ -18,9 +19,48 @@ class BulkRNABertModel(L.LightningModule):
         )
         self.recall_metric = Recall("multiclass", num_classes=64, average="weighted")
         self.embeddings = []
+        self.lr = lr
+        self.save_hyperparameters()
 
     def forward(self, input_ids):
         return self.model(input_ids)
+
+    def training_step(self, batch, batch_idx):
+        input_ids, labels = batch["input_ids"], batch["labels"]
+        out = self.forward(input_ids)
+        _, _, C = out["logits"].shape
+        out = out["logits"].reshape(-1, C)
+        labels = labels.flatten()
+        loss = F.cross_entropy(
+            out,
+            labels,
+            ignore_index=-100,
+            label_smoothing=0.1,
+        )
+        self.log("train_loss", loss, prog_bar=True, on_step=True)
+        return loss
+
+    def validation_step(self, batch, batch_idx):
+        input_ids, labels = batch["input_ids"], batch["labels"]
+        out = self.forward(input_ids)
+        _, _, C = out["logits"].shape
+        out = out["logits"].reshape(-1, C)
+        labels = labels.flatten()
+        loss = F.cross_entropy(
+            out,
+            labels,
+            ignore_index=-100,
+            label_smoothing=0.1,
+        )
+        preds = out.argmax(-1)
+        mask = labels != -100
+        preds = preds[mask]
+        labels = labels[mask]
+        acc = self.acc_metric(preds, labels)
+        self.log_dict({"val_loss": loss, "val_acc": acc}, prog_bar=True)
+
+    def configure_optimizers(self):
+        return torch.optim.Adam(self.parameters(), lr=self.lr)
 
     def test_step(self, batch, batch_idx):
         input_ids = batch["input_ids"]
